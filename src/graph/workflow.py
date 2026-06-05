@@ -1,8 +1,9 @@
-from langgraph.graph import StateGraph, END
-from src.graph.state import AgentState
 from src.agents.methodology import methodology_node
 from src.agents.results import results_node
 from src.agents.synthesis import synthesis_node
+from src.graph.state import AgentState
+
+from langgraph.graph import StateGraph, END
 
 def build_workflow():
     # 1. Initialize graph with our shared state schema

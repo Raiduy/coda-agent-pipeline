@@ -9,12 +9,6 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 load_dotenv()
 
-model = ChatOpenAI(
-    model="gpt-oss-120b",
-    temperature=0.1,
-    api_key=os.environ.get("OPENAI_API_KEY"),  # If you prefer to pass api key in directly
-    base_url=os.environ.get("OPENAI_BASE_URL"),
-)
 
 embeddings_model = OpenAIEmbeddings(
     model=os.environ.get("EMBEDDING_MODEL"),
@@ -39,4 +33,3 @@ doc_ids = vector_store.add_documents(documents=docs)
 retriever = vector_store.as_retriever()
 docs = retriever.invoke("What does Experiment 2 explore?")
 print(docs[0].page_content)
-

@@ -9,6 +9,7 @@ class PaperParser:
     def __init__(self):
         # 1. Explicitly configure pipeline options to shut off deprecated/unneeded image generation
         pipeline_options = PdfPipelineOptions()
+        pipeline_options.allow_external_plugins = True
         pipeline_options.generate_page_images = True
         pipeline_options.generate_picture_images = True
         pipeline_options.generate_table_images = True  # explicitly disables the deprecated path

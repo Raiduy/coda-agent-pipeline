@@ -218,5 +218,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 pdfs
+instructions
 tests/data
 AGENTS.md

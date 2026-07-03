@@ -8,16 +8,20 @@ from src.ingestion.parser import PaperParser
 from src.storage.vector_store import VectorStoreManager
 from src.storage.embedder import ResearchPaperEmbedder
 
-def run_extraction_pipeline(pdf_path: str, paper_id: str = "paper_001"):
-    print(f"🚀 [Pipeline] Launching extraction workflow for: {pdf_path}")
+def run_extraction_pipeline(pdf_paths: list[str], paper_id: str = "paper_001"):
+    pdf_paths = [pdf_paths] if isinstance(pdf_paths, str) else pdf_paths
+    print(f"🚀 [Pipeline] Launching extraction workflow for: {pdf_paths}")
     
     # -------------------------------------------------------------
     # Phase 1: Document Ingestion & Chunking
     # -------------------------------------------------------------
-    print("⏳ Parsing research paper PDF...")
+    print("⏳ Parsing research paper PDFs...")
     parser = PaperParser()
-    chunks = parser.parse_pdf(pdf_path)
-    print(f"✅ Extracted {len(chunks)} text chunks from paper.")
+    all_chunks = []
+    for pdf_path in pdf_paths:
+        chunks = parser.parse_pdf(pdf_path)
+        all_chunks.extend(chunks)
+    print(f"✅ Extracted {len(all_chunks)} total text chunks from papers.")
 
     # -------------------------------------------------------------
     # Phase 2: Create Vector Database Instance
@@ -26,7 +30,7 @@ def run_extraction_pipeline(pdf_path: str, paper_id: str = "paper_001"):
     embedder = ResearchPaperEmbedder()
     # Ensure VectorStoreManager returns an active langchain_chroma.Chroma instance
     vstore_manager = VectorStoreManager(embedder=embedder)
-    vector_db = vstore_manager.create_vector_store(chunks)
+    vector_db = vstore_manager.create_vector_store(all_chunks)
     print("✅ Chroma vector database successfully populated and live.")
 
     # -------------------------------------------------------------
@@ -52,16 +56,17 @@ def run_extraction_pipeline(pdf_path: str, paper_id: str = "paper_001"):
     print("\n🏁 Graph execution successfully finished!")
     
     # Extract the final consolidated data payload compiled by SynthesisAgent
-    extraction_results = final_state.get("final_consolidated_record", {})
+    extraction_results = final_state.get("translated_cookbook_record", {})
     return extraction_results
 
 
 if __name__ == "__main__":
     # Specify the local path to the research article you intend to meta-analyze
-    target_pdf = "./tests/data/sample.pdf"
+    target_pdfs = ["./pdfs/Abatayo et al. - 2018 - Facebook-to-Facebook online communication and eco.pdf"]
+                   # "./pdfs/Abatayo et al. - 2018 - Facebook-to-Facebook online communication and eco-Supplementary materials.pdf"]
     
     try:
-        results = run_extraction_pipeline(target_pdf, paper_id="study_smith_2021")
+        results = run_extraction_pipeline(target_pdfs, paper_id="study_smith_2021")
         
         # Pretty print the final dictionary containing variables 1 to 60
         print("\n======================= METADATA EXTRACTION RESULTS =======================")

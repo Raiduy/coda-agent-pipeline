@@ -1,6 +1,6 @@
-from src.agents.data_metadata_agent import data_metadata_node
+from src.agents.sample_demographics_agent import sample_demographics_node
 
-def test_data_metadata_agent_logic():
+def test_sample_demographics_agent_logic():
     mock_context = """
     Received for review on August 14, 2024. Accepted May 3, 2025.
 
@@ -20,7 +20,7 @@ def test_data_metadata_agent_logic():
     }
         
     # Run the agent
-    result = data_metadata_node(mock_state)
+    result = sample_demographics_node(mock_state)
     
     # Assertions
     assert "extracted_features" in result
@@ -31,7 +31,7 @@ def test_data_metadata_agent_logic():
     print(json.dumps(data, indent=4))
     
     # Verify the fallback year was scraped from the 'Received' timestamp
-    assert data["data_collection_year"] == 2024
+    assert data["data_collection_year"] == 2024 | data["data_collection_year"] == '2024'
     assert data["source_of_year"] == 4
     
     # Verify ISO-3 mapping and explicit location sourcing

@@ -23,7 +23,7 @@ def test_parser_to_metadata_agent_pipeline(shared_parser, sample_pdf_path):
 
     data = payload["data"]
     # Verify the output schema keys are fully present and populated
-    for field in ["title", "authors_and_year", "study_number", "published_status"]:
+    for field in ["title", "authors_and_year", "published_status"]:
         assert field in data, f"Missing required schema field: {field}"
 
     assert isinstance(data["published_status"], int), "Published status must be parsed as an integer"

@@ -1,4 +1,5 @@
-from typing import TypedDict, Annotated, List
+from typing import TypedDict, Annotated, List, Dict, Any
+from langchain_chroma import Chroma
 import operator
 
 class AgentState(TypedDict):
@@ -6,11 +7,12 @@ class AgentState(TypedDict):
     paper_id: str
 
     # Combined vector store tool access
-    vector_store_id: str
+    vector_store: Chroma
 
     # Parallel agents append their findings to this list
     extracted_features: Annotated[List[dict], operator.add]
 
     # The final polished output
-    final_report: dict
+    final_consolidated_record: Dict[str, Any]
 
+    translated_cookbook_record: Dict[str, Any]

@@ -41,7 +41,7 @@ class GameDesignAgent(BaseAgent):
             model=settings.CHAT_MODEL,
             api_key=settings.LITELLM_API_KEY,
             base_url=settings.LITELLM_BASE_URL,
-            temperature=0.2
+            temperature=settings.TEMPERATURE
         )
         super().__init__(
             llm=llm,

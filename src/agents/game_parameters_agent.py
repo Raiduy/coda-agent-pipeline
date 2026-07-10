@@ -32,10 +32,11 @@ If parameters are not applicable to the current game structure, strictly fill wi
 class GameParametersAgent(BaseAgent):
     def __init__(self):
         llm = ChatOpenAI(
-                model=settings.CHAT_MODEL, 
-                api_key=settings.LITELLM_API_KEY,
-                base_url=settings.LITELLM_BASE_URL,
-                temperature=0.2)
+            model=settings.CHAT_MODEL, 
+            api_key=settings.LITELLM_API_KEY,
+            base_url=settings.LITELLM_BASE_URL,
+            temperature=settings.TEMPERATURE
+        )
         super().__init__(
             llm=llm,
             system_prompt=GAME_PARAMETERS_SYSTEM_PROMPT,

@@ -1,5 +1,6 @@
 from config.settings import settings
 from src.storage.embedder import ResearchPaperEmbedder
+from src.utils.logger import logger
 
 from typing import List
 from langchain_core.documents import Document
@@ -19,7 +20,7 @@ class VectorStoreManager:
         """
         Creates an in-memory Chroma vector store populated with document chunks.
         """
-        print(f"🧬 Generating embeddings using {settings.EMBEDDING_MODEL}...")
+        logger.info(f"🧬 Generating embeddings using {settings.EMBEDDING_MODEL}...")
         
         # 2. Initialize Chroma dynamically with the documents and embedding engine
         vector_store = Chroma.from_documents(
@@ -27,5 +28,5 @@ class VectorStoreManager:
             embedding=self.embedder.get_client()
         )
         
-        print("💾 Vector store successfully initialized in memory.")
+        logger.info("💾 Vector store successfully initialized in memory.")
         return vector_store

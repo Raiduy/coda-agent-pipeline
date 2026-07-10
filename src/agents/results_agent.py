@@ -26,10 +26,11 @@ Read statistical tables, text descriptions, and footnotes with extreme care. Do 
 class ResultsAgent(BaseAgent):
     def __init__(self):
         llm = ChatOpenAI(
-                model=settings.CHAT_MODEL, 
-                api_key=settings.LITELLM_API_KEY,
-                base_url=settings.LITELLM_BASE_URL,
-                temperature=0.2)
+            model=settings.CHAT_MODEL,
+            api_key=settings.LITELLM_API_KEY,
+            base_url=settings.LITELLM_BASE_URL,
+            temperature=settings.TEMPERATURE
+        )
 
         super().__init__(
             llm=llm,

@@ -72,10 +72,11 @@ Always verify data types. When a numeric property is missing, provide "999" or "
 class SampleDemographicsAgent(BaseAgent):
     def __init__(self):
         llm = ChatOpenAI(
-                model=settings.CHAT_MODEL, 
-                api_key=settings.LITELLM_API_KEY,
-                base_url=settings.LITELLM_BASE_URL,
-                temperature=0.2)
+            model=settings.CHAT_MODEL,
+            api_key=settings.LITELLM_API_KEY,
+            base_url=settings.LITELLM_BASE_URL,
+            temperature=settings.TEMPERATURE
+        )
 
         super().__init__(
             llm=llm,

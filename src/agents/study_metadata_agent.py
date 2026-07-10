@@ -46,10 +46,11 @@ Strictly output values matching the defined schema types. If any textual informa
 class StudyMetadataAgent(BaseAgent):
     def __init__(self):
         llm = ChatOpenAI(
-                model=settings.CHAT_MODEL, 
-                api_key=settings.LITELLM_API_KEY,
-                base_url=settings.LITELLM_BASE_URL,
-                temperature=0.2)
+            model=settings.CHAT_MODEL,
+            api_key=settings.LITELLM_API_KEY,
+            base_url=settings.LITELLM_BASE_URL,
+            temperature=settings.TEMPERATURE
+        )
 
         super().__init__(
             llm=llm,

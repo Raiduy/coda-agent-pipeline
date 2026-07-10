@@ -1,8 +1,10 @@
 from typing import Type, Dict, Any
+import time
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 from src.graph.state import AgentState
+from src.utils.logger import logger
 
 class BaseAgent:
     def __init__(
@@ -37,34 +39,51 @@ class BaseAgent:
         Dynamically fetches targeted RAG context from the state database,
         runs the execution chain, and appends the features to the global graph state.
         """
+        agent_name = self.__class__.__name__
+        start_time = time.time()
+        logger.info(f"🚀 Starting agent [{agent_name}]")
+        
         # 1. Fetch the database instance from the shared graph state
         vector_store = state.get("vector_store")
         
         if vector_store is not None:
-            print(f"🔍 [{self.__class__.__name__}] Querying Chroma DB with intent: '{self.query_intent}'")
+            logger.info(f"🔍 [{agent_name}] Querying Chroma DB with intent: '{self.query_intent}'")
             
-            # 2. Invoke semantic vector search (retrieve the top 3 most relevant text chunks)
+            # 2. Invoke semantic vector search (retrieve the top 10 most relevant text chunks)
+            db_start = time.time()
             retriever = vector_store.as_retriever(search_kwargs={"k": 10})
             retrieved_docs = retriever.invoke(self.query_intent)
+            db_duration = time.time() - db_start
+            
+            logger.debug(f"⏱️  VectorDB retrieval for [{agent_name}] took {db_duration:.2f}s")
             
             # Combine retrieved text snippets into a single context block
             paper_context = "\n\n".join([doc.page_content for doc in retrieved_docs])
         else:
-            # Fallback if testing infrastructure passes a plain string directly
-            print('\n*******ERROR, NO CONTEXT AVAILABLE********')
+            logger.error(f"❌ [{agent_name}] NO CONTEXT AVAILABLE - No vector_store in state")
             paper_context = state.get("paper_context", "No context provided.")
         
         # 3. Invoke the chain with the targeted context
-        extracted_data = self.runnable.invoke({"context": paper_context})
+        llm_start = time.time()
+        try:
+            extracted_data = self.runnable.invoke({"context": paper_context})
+        except Exception as e:
+            logger.exception(f"💥 Error during LLM invocation for [{agent_name}]: {str(e)}")
+            raise e
+        llm_duration = time.time() - llm_start
+        
+        logger.debug(f"⏱️  LLM generation for [{agent_name}] took {llm_duration:.2f}s")
+        
+        total_duration = time.time() - start_time
+        logger.info(f"✅ Agent [{agent_name}] completed in {total_duration:.2f}s")
         
         # 3. Return the payload to update LangGraph's State
-        # Because 'extracted_features' uses operator.add in our state, 
-        # this dict will be cleanly appended to the list automatically!
+        data_payload = extracted_data.model_dump() if isinstance(extracted_data, BaseModel) else extracted_data
         return {
             "extracted_features": [
                 {
-                    "agent_name": self.__class__.__name__,
-                    "data": extracted_data.model_dump()
+                    "agent_name": agent_name,
+                    "data": data_payload
                 }
             ]
         }

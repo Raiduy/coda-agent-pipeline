@@ -4,6 +4,8 @@ from langchain_core.language_models import BaseChatModel
 from pydantic import BaseModel
 from src.graph.state import AgentState
 
+import time
+
 class BaseAgent:
     def __init__(
         self, 
@@ -37,7 +39,14 @@ class BaseAgent:
         Dynamically fetches targeted RAG context from the state database,
         runs the execution chain, and appends the features to the global graph state.
         """
+        agent_name = self.__class__.__name__
+        target_study = state.get("target_study_num", "1")
+        target_desc = state.get("target_study_desc", "")
+        
+        print(f"▶️ [{agent_name} | Study {target_study}] Thread started...")
+
         # 1. Fetch the database instance from the shared graph state
+        t0_rag = time.time()
         vector_store = state.get("vector_store")
         
         if vector_store is not None:
@@ -53,9 +62,18 @@ class BaseAgent:
             # Fallback if testing infrastructure passes a plain string directly
             print('\n*******ERROR, NO CONTEXT AVAILABLE********')
             paper_context = state.get("paper_context", "No context provided.")
-        
+
+        t1_rag = time.time()
+        rag_duration = t1_rag - t0_rag
+        print(f"   🔎 [{agent_name} | Study {target_study}] ChromaDB retrieval took {rag_duration:.2f} seconds.")
+
         # 3. Invoke the chain with the targeted context
+        t0_llm = time.time()
         extracted_data = self.runnable.invoke({"context": paper_context})
+        t1_llm = time.time()
+        llm_duration = t1_llm - t0_llm
+        print(f"   🤖 [{agent_name} | Study {target_study}] LLM generation took {llm_duration:.2f} seconds.")
+        print(f"⏹️ [{agent_name} | Study {target_study}] Thread complete. (Total: {rag_duration + llm_duration:.2f}s)")
         
         # 3. Return the payload to update LangGraph's State
         # Because 'extracted_features' uses operator.add in our state, 

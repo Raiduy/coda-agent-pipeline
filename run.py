@@ -1,9 +1,10 @@
 import json
 import operator
-from config.settings import settings
-from src.graph.workflow import build_workflow
+import time
 
-# Assuming these modules exist in your codebase for document parsing and storage
+from config.settings import settings
+
+from src.graph.workflow import build_workflow
 from src.ingestion.parser import PaperParser
 from src.storage.vector_store import VectorStoreManager
 from src.storage.embedder import ResearchPaperEmbedder
@@ -43,7 +44,7 @@ def run_extraction_pipeline(pdf_paths: list[str], paper_id: str = "paper_001"):
     initial_state = {
         "paper_id": paper_id,
         "vector_store": vector_db,        # Pass live Chroma object directly into state
-        "extracted_features": []          # Start with an empty list for parallel workers
+        "all_extracted_features": []          # Start with an empty list for parallel workers
     }
 
     print("\n🧠 Running Parallel RAG Extraction Workers...")
@@ -51,12 +52,16 @@ def run_extraction_pipeline(pdf_paths: list[str], paper_id: str = "paper_001"):
     
     # Run the graph synchronously.
     # The framework manages concurrent branch execution automatically!
-    final_state = app.invoke(initial_state)
+    print("\n🧠 Dynamic Map-Reduce Routing Active...")
     
-    print("\n🏁 Graph execution successfully finished!")
+    start_time = time.time()
+    final_state = app.invoke(initial_state)
+    end_time = time.time()
+    
+    print(f"\n🏁 Graph execution successfully finished in {end_time - start_time:.2f} seconds!")
     
     # Extract the final consolidated data payload compiled by SynthesisAgent
-    extraction_results = final_state.get("translated_cookbook_record", {})
+    extraction_results = final_state.get("all_extracted_records", {})
     return extraction_results
 
 
@@ -64,14 +69,16 @@ if __name__ == "__main__":
     # Specify the local path to the research article you intend to meta-analyze
     target_pdfs = ["./pdfs/Abatayo et al. - 2018 - Facebook-to-Facebook online communication and eco.pdf"]
                    # "./pdfs/Abatayo et al. - 2018 - Facebook-to-Facebook online communication and eco-Supplementary materials.pdf"]
-    
+    # target_pdfs = ["./pdfs/Gomez-Ruiz and Sánchez-Expósito - 2020 - The Impact of Team Identity and Gender on Free-Rid.pdf"]
+    # target_pdfs = ["./pdfs/Häusser et al. - 2019 - Acute hunger does not always undermine prosocialit.pdf"]
+
     try:
         results = run_extraction_pipeline(target_pdfs, paper_id="study_smith_2021")
-        
+
         # Pretty print the final dictionary containing variables 1 to 60
-        print("\n======================= METADATA EXTRACTION RESULTS =======================")
+        print(f"\n======================= EXTRACTION RESULTS ({len(results)} STUDY RECORDS FOUND) =======================")
         print(json.dumps(results, indent=4))
         print("===========================================================================")
-        
+
     except Exception as e:
         print(f"\n❌ Pipeline failed during execution: {e}")

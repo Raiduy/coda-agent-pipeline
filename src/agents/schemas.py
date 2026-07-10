@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Union
+from typing import Union, List
 
 # CODEBOOK Fields 2 -> 4, 6
 class StudyMetadataSchema(BaseModel):
@@ -111,3 +111,9 @@ class VariablesSchema(BaseModel):
     rel_coeff_1: str = Field(description="Variable 56: Reliability coefficient used (e.g., a, rho, k, r, rho'); else 'N/A'.")
     rel_statistics_1: Union[float, str] = Field(description="Variable 57: Value of reliability coefficient; else 'N/A'.")
 
+class SubStudyIdentifier(BaseModel):
+    study_num: str = Field(description="The identifier (e.g., 1, 1a, 2).")
+    description: str = Field(description="Brief description of the specific study/game.")
+
+class SplitSchema(BaseModel):
+    studies: List[SubStudyIdentifier] = Field(description="List of all independent sub-studies in the paper.")
